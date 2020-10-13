@@ -1,0 +1,41 @@
+using JuMP, Cbc
+
+#prepare optimisation model
+m = Model(Cbc.Optimizer)
+
+@variable(m, d1 >= 0)
+@variable(m, d2 >= 0)
+@variable(m, d3 >= 0)
+
+@constraint(m, d1 in MOI.Integer())
+@constraint(m, d2 in MOI.Integer())
+@constraint(m, d3 in MOI.Integer())
+
+@objective(m, Min, 8993.25*d1 + 11886.5*d2 + 13479.75*d3)
+
+#recreational area constraint
+@constraint(m, 2.0075*d1 + 3.015*d2 + 4.0225*d3 <= 765)
+
+#land-ratio constraint
+@constraint(m, 0.4*d1 - 0.6*d2 -0.6*d3 >= 0)
+
+#daily water usage per day constraint
+@constraint(m, (400.0075*d1 + 700.015*d3 + 1100.0025*d3) <= 250000)
+
+#lower limit for total cost accounting for returns
+@constraint(m, (8993.25*d1 + 11886.5*d2 + 13479.75*d3) >= 100000)
+
+
+
+println(m)
+
+optimize!(m)
+
+status = termination_status(m)
+
+println("Solution status: ", status)
+
+println("Objective value: ", objective_value(m))
+println("d1 = ", value.(d1))
+println("d2 = ", value.(d2))
+println("d3 = ", value.(d3))
