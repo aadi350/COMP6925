@@ -19,6 +19,7 @@ m = Model(Clp.Optimizer)
 @variable(m, x[1:5] >= 0)
 @objective(m, Min, COST' * x)
 @constraint(m, RATIO_PROPERTIES * x .== RATIO)
+
 optimize!(m)
 
 status = termination_status(m)
