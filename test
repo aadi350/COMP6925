@@ -1,0 +1,35 @@
+using Cbc, JuMP
+
+m = Model(Cbc.Optimizer)
+
+@variable(m , x1 >= 0)
+@variable(m , x2 >= 0)
+@variable(m , x3 >= 0)
+@variable(m , x4 >= 0)
+@variable(m , x5 >= 0)
+
+@objective(m, Min, 170x1 + 160x2 + 175x3 + 180x4 + 195x5)
+
+@constraint(m, x1 >= 48)
+@constraint(m, x1 + x2 >= 79)
+@constraint(m, x1 + x2 + x3 >= 87)
+@constraint(m, x2 + x3 >= 64)
+@constraint(m, x3 + x4 >= 82)
+@constraint(m, x4 >= 43)
+@constraint(m, x4 + x5 >= 52)
+@constraint(m, x5 >= 15)
+
+println(m)
+
+optimize!(m)
+
+status = termination_status(m)
+
+println("Solution status: ", status)
+
+println("Objective value: ", objective_value(m))
+println("d1 = ", value.(x1))
+println("d2 = ", value.(x2))
+println("d3 = ", value.(x3))
+println("d3 = ", value.(x4))
+println("d3 = ", value.(x5))

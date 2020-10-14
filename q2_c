@@ -7,14 +7,14 @@ m = Model(Cbc.Optimizer)
 @variable(m, d2 >= 0)
 @variable(m, d3 >= 0)
 
-@objective(m, Max, 8993.5*d1 + 11886.5*d2 + 13479.75*d3 - 100000)
+@objective(m, Max, 8993.5*d1 + 11886.5*d2 + 13479.75*d3 - 500000)
 
 @constraint(m, d1 in MOI.Integer())
 @constraint(m, d2 in MOI.Integer())
 @constraint(m, d3 in MOI.Integer())
 
 #recreational area constraint
-@constraint(m, const1, 2.0075*d1 + 3.015*d2 + 4.0225*d3 <= 765)
+@constraint(m, const1, 2.0075*d1 + 3.015*d2 + 4.0225*d3 <= 850)
 
 #type of housing constraint
 @constraint(m, const2,  0.4*d1 - 0.6*d2 -0.6*d3 >= 0)
