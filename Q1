@@ -1,18 +1,23 @@
 using JuMP
 using Clp
 
+#following array stores price-per-acre by company
 BID_COSTS = [
-    520, 0, 650, 190, #Site 1
-    210, 410, 0, 530,  #Site 2
-    570, 495, 235, 715 #Site 3
+#   C1      C2      C3      C4
+    520,    0,      650,    190,   #Site 1
+    210,    410,    0,      530,   #Site 2
+    570,    495,    235,    715  #Site 3
 ]
 
-LAND_LIMITS = 24000
-
+#Initialise optimisation model
 m = Model(Clp.Optimizer)
+#Create Julia array and reference using JuMP optimisation references
 @variable(m, x[1:12] >= 0)
+#Set objective function to maximise profit
 @objective(m, Max, BID_COSTS' * x)
 
+#Add land constraints such that no ONE company may received
+#more than 40% of the land
 @constraint(m, sum(x[i] for i in [1,5,9]) <= 24000)
 @constraint(m, sum(x[i] for i in [2,6,10]) <= 24000)
 @constraint(m, sum(x[i] for i in [3,7,11]) <= 24000)
