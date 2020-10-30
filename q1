@@ -1,4 +1,36 @@
 using JuMP
 using Cbc
 
+#following array stores price-per-acre by company
+BID_COSTS = [
+#   C1      C2      C3      C4
+520,    0,      650,    190,   #Site 1
+210,    410,    0,      530,   #Site 2
+570,    495,    235,    715  #Site 3
+]
+
+#Initialise optimisation model
 m = Model(Cbc.Optimizer)
+#Create Julia array and reference using JuMP optimisation references
+@variable(m, x[1:12] >= 0, Int)
+#Set objective function to maximise profit
+@objective(m, Max, BID_COSTS' * x)
+
+#Add land constraints such that no ONE company may received
+#more than 40% of the land
+@constraint(m, sum(x[i] for i in [1,5,9]) <= 24000)
+@constraint(m, sum(x[i] for i in [2,6,10]) <= 24000)
+@constraint(m, sum(x[i] for i in [3,7,11]) <= 24000)
+@constraint(m, sum(x[i] for i in [4,8,12]) <= 24000)
+
+optimize!(m)
+
+status = termination_status(m)
+
+println("Solution status: ", status)
+println("Objective value:  ", objective_value(m))
+
+println("Company 1 Bids: Site I:", value(x[1]), " Site II: " ,value(x[5]), " Site III: " ,value(x[9]))
+println("Company 2 Bids: Site II:", value(x[2]), " Site II: " ,value(x[6]), " Site III: " ,value(x[10]))
+println("Company 3 Bids: Site I:", value(x[3]), " Site II: " ,value(x[7]), " Site III: " ,value(x[11]))
+println("Company 4 Bids: Site I:", value(x[4]), " Site II: " ,value(x[8]), " Site III: " ,value(x[12]))
