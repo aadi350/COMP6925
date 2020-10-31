@@ -26,6 +26,7 @@ e.g.
 #### Objective 
 Minimize product of cost-per-day (per pound) and net quantity purchased **ON** all days
 
+#### Results Using GLPK
 
 **Total Cost:**  22674.54366572725  
 **Monday:** 535.72329710955  
