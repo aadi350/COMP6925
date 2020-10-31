@@ -1,0 +1,32 @@
+using JuMP, Cbc
+
+m = Model(Cbc.Optimizer)
+
+@variable(m, x[1:11] >= 0)
+
+@constraint(m, x[1] == 134)
+@constraint(m, (x[2] + x[3]) == 239.8)  # 109 kg
+@constraint(m, (x[4] + x[5]) == 235.4)  # 107 kg
+@constraint(m, (x[6] + x[7]) == 187)    # 85 kg
+@constraint(m, (x[8] + x[9]) == 151.8)  # 69 kg
+@constraint(m, (x[10] + x[11]) == 198)  # 90 kg
+
+@objective(m, Min, 16(x[1] + x[2] + x[3] + x[4]) + 32(x[5] + x[6]) + 23(x[7] + x[8]) + 20(x[9] + x[10]) + 15(x[11]))
+
+println(m)
+
+optimize!(m)
+
+status = termination_status(m)
+
+println("Solution status: ", status)
+
+println("Objective value: ", objective_value(m))
+println("Objective value:  ", objective_value(m))
+println("Values: ", value.(x))
+println("Monday: ", value(x[1]) + value(x[2]))
+println("Tuesday: ", value(x[3]) + value(x[4]))
+println("Wednesday: ", value(x[5]) + value(x[6]))
+println("Thursday: ", value(x[7]) + value(x[8]))
+println("Friday: ", value(x[9]) + value(x[10]))
+println("Saturday: ", value(x[11]))
