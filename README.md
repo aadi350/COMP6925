@@ -6,6 +6,14 @@
 Columns record net quantity to be purchased **ON** a day  
 Rows record net quantity to be purchased **FOR** a day  
 
+e.g.
+<ul style="list-style: none;">
+  <li> x[1] + x[2] represents the net quantity bought on Monday </li>
+  <li> x[2] + x[3] represents net quantity bought for Tuesday </li> 
+  <li> Hence, x[2] (bought <b>ON</b> Monday), is bought <b>FOR</b> Tuesday </li>  
+</ul>
+
+
 | Mon | Tue | Wed | Thu | Fri | Sat | **_Demand(lb)_** | _Day_ | *Cost (per lb)* |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | `x[1]` | | | | | | 295 | *Mon* | 16 |
