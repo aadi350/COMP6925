@@ -2,16 +2,29 @@ using JuMP, Cbc
 
 m = Model(Cbc.Optimizer)
 
-@variable(m, x[1:11] >= 0)
+@variable(m, x[0:11] >= 0)
 
-@constraint(m, x[1] == 134)
-@constraint(m, (x[2] + x[3]) == 239.8)  # 109 kg
-@constraint(m, (x[4] + x[5]) == 235.4)  # 107 kg
-@constraint(m, (x[6] + x[7]) == 187)    # 85 kg
-@constraint(m, (x[8] + x[9]) == 151.8)  # 69 kg
-@constraint(m, (x[10] + x[11]) == 198)  # 90 kg
+KG_TO_LB = 2.20462262185
 
-@objective(m, Min, 16(x[1] + x[2] + x[3] + x[4]) + 32(x[5] + x[6]) + 23(x[7] + x[8]) + 20(x[9] + x[10]) + 15(x[11]))
+DEMAND_KG = [
+    134, 109, 107, 85, 69, 90
+]
+
+COST = [
+    16, 16, 32, 23, 20, 15
+]
+
+DEMAND = DEMAND_KG * KG_TO_LB
+println(DEMAND)
+
+@constraint(m, x[1] == DEMAND[1])
+@constraint(m, (x[2] + x[3]) == DEMAND[2])  # 109 kg
+@constraint(m, (x[4] + x[5]) == DEMAND[3])  # 107 kg
+@constraint(m, (x[6] + x[7]) == DEMAND[4])    # 85 kg
+@constraint(m, (x[8] + x[9]) == DEMAND[5])  # 69 kg
+@constraint(m, (x[10] + x[11]) == DEMAND[6])  # 90 kg
+
+@objective(m, Min, COST[1]*(x[1] + x[2]) + COST[2]*(x[3] + x[4]) + COST[3]*(x[5] + x[6]) + COST[4]*(x[7] + x[8]) + COST[5]*(x[9] + x[10]) + COST[6]*(x[11]))
 
 println(m)
 
@@ -21,9 +34,8 @@ status = termination_status(m)
 
 println("Solution status: ", status)
 
-println("Objective value: ", objective_value(m))
-println("Objective value:  ", objective_value(m))
-println("Values: ", value.(x))
+println("Total Cost:  ", objective_value(m))
+
 println("Monday: ", value(x[1]) + value(x[2]))
 println("Tuesday: ", value(x[3]) + value(x[4]))
 println("Wednesday: ", value(x[5]) + value(x[6]))
