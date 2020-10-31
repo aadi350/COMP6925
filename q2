@@ -1,6 +1,6 @@
-using JuMP, Cbc
+using JuMP, GLPK
 
-m = Model(Cbc.Optimizer)
+m = Model(GLPK.Optimizer)
 
 @variable(m, x[0:11] >= 0)
 
