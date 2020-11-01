@@ -4,9 +4,9 @@ using Cbc
 #following array stores price-per-acre by company
 BID_COSTS = [
 #   C1      C2      C3      C4
-520,    0,      650,    190,   #Site 1
-210,    410,    0,      530,   #Site 2
-570,    495,    235,    715  #Site 3
+    520,    0,      650,    190,    #Site 1
+    210,    410,    0,      530,    #Site 2
+    570,    495,    235,    715     #Site 3
 ]
 
 #Initialise optimisation model
@@ -22,6 +22,10 @@ m = Model(Cbc.Optimizer)
 @constraint(m, sum(x[i] for i in [2,6,10]) <= 24000)
 @constraint(m, sum(x[i] for i in [3,7,11]) <= 24000)
 @constraint(m, sum(x[i] for i in [4,8,12]) <= 24000)
+
+@constraint(m, sum(x[i] for i in [1,2,3,4]) <= 10000)
+@constraint(m, sum(x[i] for i in [5,6,7,8]) <= 20000)
+@constraint(m, sum(x[i] for i in [9,10,11,12]) <= 30000)
 
 optimize!(m)
 
