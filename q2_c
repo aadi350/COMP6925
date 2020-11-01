@@ -1,0 +1,46 @@
+using JuMP, GLPK
+
+m = Model(GLPK.Optimizer)
+
+@variable(m, x[0:17] >= 0)
+
+KG_TO_LB = 2.20462262185
+
+DEMAND_KG = [
+    134, 109, 107, 85, 69, 90
+]
+
+COST = [
+    16, 16, 32, 23, 20, 15
+]
+
+DEMAND = DEMAND_KG * KG_TO_LB
+println(DEMAND)
+
+@constraint(m, (x[1] + x[17]) == DEMAND[1]) # FOR Monday
+@constraint(m, (x[2] + x[3]) == DEMAND[2])  # FOR Tuesay
+@constraint(m, (x[4] + x[5] + x[12]) == DEMAND[3])  # FOR Wednesday
+@constraint(m, (x[6] + x[7] + x[13]) == DEMAND[4])    # FOR Thursday
+@constraint(m, (x[8] + x[9] + x[14]) == DEMAND[5])  # FOR Friday
+@constraint(m, (x[10] + x[11] + x[15]) == DEMAND[6])  # FOR Saturday
+@constraint(m, x[16] == 0)
+
+Z = COST[1]*(x[1] + x[2]) + (COST[1] + 20)*x[12] + COST[2]*(x[3] + x[4]) + (COST[2] + 20)*x[13] + COST[3]*(x[5] + x[6]) + (COST[3] + 20)*x[14] + COST[4]*(x[7] + x[8]) + (COST[4] + 20)*x[15] + COST[5]*(x[9] + x[10]) + (COST[5] + 20)*x[16] + COST[6]*(x[11]) + (COST[6] + 20)*x[17]
+@objective(m, Min, Z)
+
+println(m)
+
+optimize!(m)
+
+status = termination_status(m)
+
+println("Solution status: ", status)
+
+println("Total Cost:  ", objective_value(m))
+
+println("Monday: ", value(x[1]) + value(x[2]))
+println("Tuesday: ", value(x[3]) + value(x[4]))
+println("Wednesday: ", value(x[5]) + value(x[6]))
+println("Thursday: ", value(x[7]) + value(x[8]))
+println("Friday: ", value(x[9]) + value(x[10]))
+println("Saturday: ", value(x[11]))
