@@ -1,0 +1,32 @@
+using JuMP, GLPK
+
+m = Model(GLPK.Optimizer)
+
+@variable(m, x[1:7], binary=true)
+
+@constraint(m, x[1] + x[3] >= 1)
+@constraint(m, x[1] + x[2] >= 1)
+@constraint(m, x[2] >= 1)
+@constraint(m, x[4] >= 1)
+@constraint(m, x[2] + x[6] >= 1)
+@constraint(m, x[4] + x[5] >= 1)
+@constraint(m, x[3] + x[5] + x[6] >= 1)
+@constraint(m, x[4] >= 1)
+@constraint(m, x[3] + x[4] + x[5] >= 1)
+@constraint(m, x[3] + x[5] + x[6] >= 1)
+@constraint(m, x[3] + x[6] >= 1)
+@constraint(m, x[5] >= 1)
+@constraint(m, x[6] + x[7] >= 1)
+@constraint(m, x[7] >= 1)
+@constraint(m, x[6] + x[7] >= 1)
+@constraint(m, x[7] >= 1)
+
+@objective(m, Min, sum(x))
+optimize!(m)
+
+status = termination_status(m)
+
+println("Solution status: ", status)
+println("Objective value:  ", objective_value(m))
+
+print(value.(x))
