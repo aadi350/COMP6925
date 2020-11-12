@@ -1,48 +1,66 @@
-using JuMP, Cbc
+using JuMP, Cbc, GLPK, MathOptInterface
 
 m = Model(Cbc.Optimizer)
+
+ROW_RANGE = 1:7
+COL_RANGE = 1:length(COMMUNITY_POP)
 
 SITE_COST = [4, 3.60, 2.30, 4.10, 3.15, 2.80, 2.65]
 COMMUNITY_POP = [4, 3, 10, 13, 6, 7, 9, 11, 15, 11, 6, 12, 7, 5, 16]
 SITE_SERV = [
-    [4 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0];
-    [0 3 10 0 6 0 0 0 0 0 0 0 0 0 0 0];
-    [4 0 0 0 0 0 7 0 15 11 0 0 0 0 0 0];
-    [0 0 0 14 0 7 0 11 15 0 0 0 0 0 0 0];
-    [4 3 0 0 0 7 9 0 15 0 6 0 0 0 0 0];
-    [0 0 0 0 6 0 9 0 0 11 0 12 0 5 0 0];
-    [4 3 0 0 0 0 0 0 0 0 0 0 12 7 5 16]
+    #1  2   3   4   5   6   7   8   9   10  11  12  13  14  15
+    [4  3   0   0   0   0   0   0   0   0   0   0   0   0   0]; # 1
+    [0  3   10  0   6   0   0   0   0   0   0   0   0   0   0]; # 2
+    [4  0   0   0   0   0   7   0   15  11  0   0   0   0   0]; # 3
+    [0  0   0   14  0   7   0   11  15  0   0   0   0   0   0]; # 4
+    [0  0   0   0   0   7   9   0   15  0   6   0   0   0   0]; # 5
+    [0  0   0   0   6   0   9   0   0   11  0   12  0   5   0]; # 6
+    [0  0   0   0   0   0   0   0   0   0   0   12  7   5   16] # 7
 ]
 
 
 NUM_SERV = zeros(7)
 for n in 1:7
-    NUM_SERV[n] = sum(SITE_SERV[n, 1:16])
+    NUM_SERV[n] = sum(SITE_SERV[n, 1:15])
 end
 
-@variable(m, x[1:7, 1:15], binary=true)
-@variable(m, y[1:7], binary = true)
+println(NUM_SERV)
+
+@variable(m, x[1:7, 1:15], Bin)
+@variable(m, y[1:7], Bin)
 
 
-@constraint(m, SITE_COST' * y <= 11)
-
-
-for row in 1:length(SITE_COST)
-    for col in 1:15
-        @constraint(m, x[row, col] <= y[row])
-    end
-end
-
-for l in 1:length(SITE_COST)
-    @constraint(m, sum(x[1:7, l]) <= 1)
+for row in ROW_RANGE
+    @constraint(m, y[row] ==  sum(x[row, 1:15]))
 end
 
 
-@objective(m, Max, NUM_SERV' * y)
+# for row in ROW_RANGE
+#     @constraint(m, y => {(sum(x[row, COL_RANGE]) >= 1)})
+# end
+
+@constraint(m, sum(SITE_COST' * y) <= 11)
+
+for l in 1:15
+    @constraint(m, (sum(x[i, l] for i in 1:7) <= 1))
+end
+@objective(m, Max, sum(sum(x[i, j] * SITE_SERV[i, j] for i in 1:7) for j in 1:15))
 optimize!(m)
 
 status = termination_status(m)
 
+println()
+println(sum(SITE_SERV[1:15]))
+println()
+
 println("Solution status: ", status)
 println("Objective value:  ", objective_value(m))
-print(value.(y))
+println("Total Cost: ", SITE_COST' * value.(y))
+
+for row in 1:7
+    println("Site ", row, ": ", value.(y[row]))
+end
+
+for row in 1:7
+    println(value.(y[row]), " ", value.(x[row, 1:15]))
+end
