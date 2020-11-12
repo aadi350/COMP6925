@@ -34,11 +34,6 @@ for row in ROW_RANGE
     @constraint(m, y[row] ==  sum(x[row, 1:15]))
 end
 
-
-# for row in ROW_RANGE
-#     @constraint(m, y => {(sum(x[row, COL_RANGE]) >= 1)})
-# end
-
 @constraint(m, sum(SITE_COST' * y) <= 11)
 
 for l in 1:15
