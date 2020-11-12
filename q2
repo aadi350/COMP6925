@@ -1,12 +1,18 @@
-using JuMP, Cbc, GLPK, MathOptInterface
+using JuMP, Cbc, MathOptInterface
 
 m = Model(Cbc.Optimizer)
 
+# For iterating through matrix
 ROW_RANGE = 1:7
-COL_RANGE = 1:length(COMMUNITY_POP)
-
+COL_RANGE = 1:16
+# Stores cost of setting up individual sites
 SITE_COST = [4, 3.60, 2.30, 4.10, 3.15, 2.80, 2.65]
+# Population of each community
 COMMUNITY_POP = [4, 3, 10, 13, 6, 7, 9, 11, 15, 11, 6, 12, 7, 5, 16]
+
+# Number of people served per site
+# Rows represent sites
+# Columns represent columns
 SITE_SERV = [
     #1  2   3   4   5   6   7   8   9   10  11  12  13  14  15
     [4  3   0   0   0   0   0   0   0   0   0   0   0   0   0]; # 1
@@ -18,27 +24,25 @@ SITE_SERV = [
     [0  0   0   0   0   0   0   0   0   0   0   12  7   5   16] # 7
 ]
 
-
-NUM_SERV = zeros(7)
-for n in 1:7
-    NUM_SERV[n] = sum(SITE_SERV[n, 1:15])
-end
-
-println(NUM_SERV)
-
+# Optimization variable
 @variable(m, x[1:7, 1:15], Bin)
+# Cost-constraint variable
 @variable(m, y[1:7], Bin)
 
-
+# Set cost-constraint (site) variable depending on whether site is
+# actually used in optimal solution
 for row in ROW_RANGE
     @constraint(m, y[row] ==  sum(x[row, 1:15]))
 end
 
+# Limit net cost to 11 (in millions)
 @constraint(m, sum(SITE_COST' * y) <= 11)
 
+# Communities are not counted more than once
 for l in 1:15
     @constraint(m, (sum(x[i, l] for i in 1:7) <= 1))
 end
+
 @objective(m, Max, sum(sum(x[i, j] * SITE_SERV[i, j] for i in 1:7) for j in 1:15))
 optimize!(m)
 
@@ -56,6 +60,7 @@ for row in 1:7
     println("Site ", row, ": ", value.(y[row]))
 end
 
-for row in 1:7
-    println(value.(y[row]), " ", value.(x[row, 1:15]))
-end
+# # View values of optimization matrix
+# for row in 1:7
+#     println(value.(y[row]), " ", value.(x[row, 1:15]))
+# end
