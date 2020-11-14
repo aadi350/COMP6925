@@ -1,0 +1,28 @@
+# using JuMP
+using Convex, SCS
+
+# @variable(m, x1 >= 0)
+# @variable(m, x2 >= 0)
+x1 = Variable()
+x2 = Variable()
+
+# # # specify the constraints
+# # @constraint(m, x1 <= 4)
+# # @constraint(m, 2x2 <= 12)
+# # @constraint(m, 3x1 + 2x2 <= 25)
+constraints = [x1 >= 0, x2 >= 0, 3x1  + 2x2 <= 25]#[3x1 + 2x2 <= 25]
+
+# @NLobjective(m, Max, 126x1 - 9x2^2 + 182x2 - 13x2^2)
+objective = 126x1 - 9square(x1) + 182x2 - 13square(x2)
+
+
+problem = maximize(objective, constraints)
+
+# Solve the problem by calling solve!
+solve!(problem, SCS.Optimizer())
+
+# Check the status of the problem
+println("Status: ", problem.status) # :Optimal, :Infeasible, :Unbounded etc.
+
+# Get the optimal value
+println("Optimal value: ", problem.optval)
