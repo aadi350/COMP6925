@@ -17,12 +17,11 @@ def get_tasks(mean=100, limit_upper=200):
         temp_task = Task(id=i, priority=priority[i], clk_cycles=clk_cycles[i])
         temp_task.set_processor(HIGH)
         task_list.append(temp_task)
-
     return task_list
 
 
 def gen_priority(n):
-    return [random.choice(range(1,4)) for i in range(n)]
+    return [random.choice(range(1, 4)) for i in range(n)]
 
 
 def gen_num_tasks(mean):

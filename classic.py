@@ -39,7 +39,7 @@ model.add(lpSum((tasks[i].cycles/HIGH)*high_f[i] + (tasks[i].cycles/LOW)*low_f[i
 # Minimize power
 model += lpSum(tasks[i].cycles*high_f[i] + tasks[i].cycles*low_f[i] for i in range(len(tasks)))
 
-status = model.solve(pl.getSolver('GLPK_CMD'))
+status = model.solve()
 
 print('Net time', lpSum((tasks[i].cycles/HIGH)*high_f[i].value() + (tasks[i].cycles/LOW)*low_f[i].value() for i in range(len(tasks))))
 print('Net power', lpSum(HIGH*high_f[i].value() + LOW*low_f[i].value() for i in range(len(tasks))))
