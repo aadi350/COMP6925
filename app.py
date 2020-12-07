@@ -27,7 +27,7 @@ def load_tasks(file_path='tasks.csv'):
         logging.debug('Task list', task_list)
 
 
-def optimize_single_set(task_list=task_list):
+def optimize_single_set(task_list):
     status = None
     best_solution = 0
     best_schedule = None
@@ -51,7 +51,6 @@ def optimize_single_set(task_list=task_list):
                     s_new = s
                     s_new.append(task)
                     priority_new = sum(s_new[i].priority for i in range(1, len(s_new)))
-                    duration_new = sum(s_new[i].time for i in range(1, len(s_new)))
                     remaining_schedules.append(s_new)
                     if priority_new > best_solution:
                         best_solution = priority_new
@@ -60,7 +59,6 @@ def optimize_single_set(task_list=task_list):
                     logging.info('Fast time: {}'.format(s_new[-1].get_time()))
                     s_new[-1].set_processor(LOW)
                     if PRINT_LOGS: print('Slow time: {}'.format(s_new[-1].get_time()))
-                    duration_step_down = sum(s_new[i].time for i in range(1, len(s_new)))
                     step_down_time = sum(s[i].time for i in range(1, len(s))) + task.time
                     if step_down_time > WINDOW:
                         logging.debug('Step down not feasible')
