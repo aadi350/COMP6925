@@ -1,27 +1,16 @@
 import pulp as pl
 from pulp import LpMinimize, LpProblem, lpSum, LpVariable, LpBinary
 
-from tasks_gen import get_tasks
+from app import load_tasks
+
 print(pl.listSolvers())
-TIME_MAX = 100
+TIME_MAX = 300
 HIGH = 100
 LOW = 70
-tasks = get_tasks(90)
+tasks = load_tasks()[350]
 task_matrix = []
 
-# for i in range(len(tasks)):
-#     task_matrix.append([
-#         tasks[i].id,
-#         tasks[i].priority,
-#         tasks[i].cycles,
-#         0,  # HIGH frequency assignment
-#         0  # LOW frequency assignment
-#     ])
-#
-# print(task_matrix)
-
 model = LpProblem(name='MaxPriority', sense=LpMinimize)
-
 
 high_f = {i: LpVariable(name=f"high_{i}", lowBound=0, cat=LpBinary) for i in range(len(tasks))}
 low_f = {i: LpVariable(name=f"low_{i}", lowBound=0, cat=LpBinary) for i in range(len(tasks))}
