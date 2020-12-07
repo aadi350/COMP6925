@@ -1,5 +1,6 @@
 import time
 import csv
+import itertools
 import logging
 from Task import Task
 from tasks_gen import get_tasks
@@ -7,7 +8,7 @@ from tasks_gen import get_tasks
 HIGH = 100
 PRINT_LOGS = False
 LOW = 70
-WINDOW = 300
+WINDOW = 180
 
 
 def load_tasks(file_path='tasks.csv'):
@@ -42,13 +43,26 @@ def optimize_single_set(task_list):
         schedule = [task]
         remaining_schedules.append(schedule)
 
+    rem_sched_i = 0
     s_new = None
-    for s in remaining_schedules:
+    i = 0
+    while len(remaining_schedules)> 0:
+        if i > len(remaining_schedules)-1:
+            i = 0
+        print(i)
+        s = remaining_schedules[i]
+        i += 1
+        rem_sched_i += 1
+        print('rem_sched_i', rem_sched_i)
         print("Num remaining_schedules", len(remaining_schedules))
         remaining_schedules.remove(s)
+        print("Num remaining_schedules (rem)", len(remaining_schedules))
         if len(remaining_schedules) < 1:
             break
+        task_list_i = 0
         for task in task_list:
+            task_list_i +=1
+            print('task_list_i', task_list_i)
             if task not in s:
                 new_time = sum(s[i].time for i in range(1, len(s))) + task.time
                 if new_time < WINDOW:
@@ -58,6 +72,7 @@ def optimize_single_set(task_list):
                     if priority_new > best_solution:
                         best_solution = priority_new
                         best_schedule = s_new
+
                     # step-down processing power for last added task
                     logging.info('Fast time: {}'.format(s_new[-1].get_time()))
                     s_new[-1].set_processor(LOW)
@@ -69,16 +84,28 @@ def optimize_single_set(task_list):
                     else:
                         logging.debug('Stepped-down')
                     status = True
+                    remaining_schedules.append(s_new)
                 else:
                     status = False
-        remaining_schedules.append(s_new)
     best_time = sum(best_schedule[i].time for i in range(1, len(best_schedule)))
-    return status, best_time, initial_list_size, len(best_schedule)
+    best_power = sum(best_schedule[i].freq for i in range(len(best_schedule)))
+    return status, best_time, best_power, initial_list_size, len(best_schedule)
+
+
+def log():
+    task_list = load_tasks()
+    custom_log = []
+    for list in task_list:
+        custom_log.append(optimize_single_set(task_list=list))
+
+    classic_log = []
+    for list in task_list:
+        custom_log.append(optimize_single_set(task_list=list))
 
 
 def main():
     task_list = load_tasks()
-    print(optimize_single_set(task_list=task_list[400]))
+    print(optimize_single_set(task_list=task_list[100]))
 
 
 if __name__ == '__main__':
