@@ -4,7 +4,6 @@ import numpy as np
 import seaborn as sns
 
 import matplotlib.pyplot as plt
-
 tasks = []
 num_tasks = []
 cat_avg = []
