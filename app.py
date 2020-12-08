@@ -1,9 +1,8 @@
-import time
 import csv
-import itertools
 import logging
+
 from Task import Task
-from tasks_gen import get_tasks
+from classic import optimize_single_classic
 
 HIGH = 100
 PRINT_LOGS = False
@@ -35,36 +34,30 @@ def optimize_single_set(task_list):
     status = None
     # priority
     best_solution = 0
-    best_schedule = None
+    best_schedule = 0
     remaining_schedules = []
-    task_list.sort(key=lambda x: x.priority, reverse=True)
+    task_list.sort(key=lambda x: x.priority, reverse=False)
 
     for task in task_list:
         schedule = [task]
         remaining_schedules.append(schedule)
 
-    rem_sched_i = 0
     s_new = None
     i = 0
-    while len(remaining_schedules)> 0:
-        if i > len(remaining_schedules)-1:
+    while len(remaining_schedules) > 0:
+        if i > len(remaining_schedules) - 1:
             i = 0
-        print(i)
         s = remaining_schedules[i]
         i += 1
-        rem_sched_i += 1
-        print('rem_sched_i', rem_sched_i)
-        print("Num remaining_schedules", len(remaining_schedules))
         remaining_schedules.remove(s)
-        print("Num remaining_schedules (rem)", len(remaining_schedules))
+        logging.debug("Num remaining_schedules (rem)", len(remaining_schedules))
         if len(remaining_schedules) < 1:
             break
         task_list_i = 0
         for task in task_list:
-            task_list_i +=1
-            print('task_list_i', task_list_i)
+            task_list_i += 1
             if task not in s:
-                new_time = sum(s[i].time for i in range(1, len(s))) + task.time
+                new_time = sum(s[i].cycles/s[i].freq for i in range(1, len(s))) + task.cycles/task.freq
                 if new_time < WINDOW:
                     s_new = s
                     s_new.append(task)
@@ -83,29 +76,33 @@ def optimize_single_set(task_list):
                         s_new[-1].set_processor(HIGH)
                     else:
                         logging.debug('Stepped-down')
+                        best_schedule = s_new
                     status = True
                     remaining_schedules.append(s_new)
                 else:
                     status = False
-    best_time = sum(best_schedule[i].time for i in range(1, len(best_schedule)))
-    best_power = sum(best_schedule[i].freq for i in range(len(best_schedule)))
-    return status, best_time, best_power, initial_list_size, len(best_schedule)
 
+    if True:
+        best_time = sum(best_schedule[i].time for i in range(len(best_schedule)))
+        best_power = sum(best_schedule[i].freq*best_schedule[i].cycles for i in range(len(best_schedule)))
+        return status, best_time, best_power, initial_list_size, len(best_schedule)
 
-def log():
-    task_list = load_tasks()
-    custom_log = []
-    for list in task_list:
-        custom_log.append(optimize_single_set(task_list=list))
-
-    classic_log = []
-    for list in task_list:
-        custom_log.append(optimize_single_set(task_list=list))
+    return None
 
 
 def main():
-    task_list = load_tasks()
-    print(optimize_single_set(task_list=task_list[100]))
+    tasks_list = load_tasks()
+    with open('custom_stats.csv', 'w', newline='\n') as file:
+        file_writer = csv.writer(file, delimiter=',')
+        for task_list in tasks_list:
+            temp = optimize_single_set(task_list=task_list)
+            file_writer.writerow(temp)
+
+    with open('classic_stats.csv', 'w', newline='\n') as file:
+        file_writer = csv.writer(file, delimiter=',')
+        for task_list in tasks_list:
+            temp = optimize_single_classic(task_list=task_list)
+            file_writer.writerow(temp)
 
 
 if __name__ == '__main__':
