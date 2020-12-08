@@ -10,6 +10,7 @@ WINDOW = 90
 
 def get_tasks(mean=100, limit_upper=200):
     n = int(gen_num_tasks(mean))
+    if n == 1: n = 10
     priority = gen_priority(n)
     clk_cycles = gen_clk_cycles(n, limit_upper)
     task_list = []

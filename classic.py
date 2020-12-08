@@ -1,4 +1,4 @@
-from pulp import LpMinimize, LpProblem, lpSum, LpVariable, LpBinary, LpStatus, LpMaximize
+from pulp import LpMinimize, LpProblem, lpSum, LpVariable, LpBinary, LpStatus, LpMaximize, PULP_CBC_CMD
 
 WINDOW = 180
 HIGH = 100
@@ -6,6 +6,9 @@ LOW = 70
 
 
 def optimize_single_classic(task_list):
+    initial_list_size = 0
+    initial_list_size = len(task_list)
+    print('Number of tasks: ', initial_list_size)
     model = LpProblem(name='MinPower', sense=LpMinimize)
 
     high_f = {i: LpVariable(name=f"high_{i}", lowBound=0, cat=LpBinary) for i in range(len(task_list))}
@@ -24,7 +27,7 @@ def optimize_single_classic(task_list):
     # Minimize power
     model += lpSum(task_list[i].cycles * high_f[i] + task_list[i].cycles * low_f[i] for i in range(len(task_list)))
 
-    status = LpStatus[model.solve()]
+    status = LpStatus[model.solve(PULP_CBC_CMD(msg=0))]
     best_time = lpSum((task_list[i].cycles / HIGH) * high_f[i].value() + (task_list[i].cycles / LOW) * low_f[i].value() for i in range(len(task_list)))
     best_power = lpSum((task_list[i].cycles*(HIGH*high_f[i].value() + LOW*low_f[i].value())) for i in range(len(task_list)))
 

@@ -1,9 +1,10 @@
 import csv
 from tasks_gen import get_tasks
 
-NUM_ITERATIONS = 5
+NUM_ITERATIONS = 25
 
-task_num = [10, 20, 30, 40, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+task_num = [10,20,30,40,50,75,100,200,250]
+print(task_num)
 tasks_list = []
 for i in range(len(task_num)):
     for j in range(NUM_ITERATIONS):
