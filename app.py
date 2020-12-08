@@ -29,6 +29,7 @@ def load_tasks(file_path='tasks.csv'):
 
 
 def optimize_single_set(task_list):
+    initial_list_size = 0
     initial_list_size = len(task_list)
     print('Number of tasks: ', initial_list_size)
     status = None
@@ -86,22 +87,45 @@ def optimize_single_set(task_list):
         best_time = sum(best_schedule[i].time for i in range(len(best_schedule)))
         best_power = sum(best_schedule[i].freq*best_schedule[i].cycles for i in range(len(best_schedule)))
         return status, best_time, best_power, initial_list_size, len(best_schedule)
-
     return None
+
+
+import cProfile, pstats, sys
+pr = cProfile.Profile()
 
 
 def main():
     tasks_list = load_tasks()
+    import cProfile
+
     with open('custom_stats.csv', 'w', newline='\n') as file:
         file_writer = csv.writer(file, delimiter=',')
         for task_list in tasks_list:
+            pr.enable()
             temp = optimize_single_set(task_list=task_list)
+            pr.disable()
+            ps = pstats.Stats(pr, stream=sys.stdout)
+            ps.sort_stats('time','cumtime').print_stats(0, 'init|get')
+            ps.get_top_level_stats()
+            # cProfile.runctx(
+            #     'optimize_single_set(task_list=task_list)',
+            #     {'task_list': task_list, 'optimize_single_set': optimize_single_set}, {})
+            #
             file_writer.writerow(temp)
-
+    print('Classic')
     with open('classic_stats.csv', 'w', newline='\n') as file:
         file_writer = csv.writer(file, delimiter=',')
         for task_list in tasks_list:
+            pr.enable()
             temp = optimize_single_classic(task_list=task_list)
+            pr.disable()
+            ps = pstats.Stats(pr, stream=sys.stdout)
+            ps.sort_stats('time', 'cumtime').print_stats(0, 'init|get')
+            ps.get_top_level_stats()
+            # cProfile.runctx(
+            #     'optimize_single_classic(task_list=task_list)',
+            #     {'task_list': task_list, 'optimize_single_classic': optimize_single_classic}, {})
+            # temp = optimize_single_classic(task_list=task_list)
             file_writer.writerow(temp)
 
 
