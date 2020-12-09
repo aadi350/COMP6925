@@ -1,12 +1,15 @@
 import csv
+import math
 import pandas as pd
 import numpy as np
 
 tasks = []
+PROCESSOR_FREQ = 30
+SCHEDULE_WINDOW = 900
 num_tasks = []
 cat_avg = []
 cat_var = []
-with open('tasks.csv', 'r') as task_file:
+with open('data/tasks.csv', 'r') as task_file:
     reader = csv.reader(task_file, delimiter=',')
     for row in reader:
         tasks.append(row)
@@ -25,21 +28,29 @@ for i in range(len(cat_var)):
 
 # scheduling stats
 
-df_classic = pd.read_csv('classic_stats.csv', delimiter=',', header=None)
-df_custom = pd.read_csv('custom_stats.csv', delimiter=',', header=None)
+df_classic = pd.read_csv('data/classic_stats.csv', delimiter=',', header=None)
+df_custom = pd.read_csv('data/custom_stats.csv', delimiter=',', header=None)
 
 num_scheduled = pd.concat([df_classic[3].astype(int), df_custom[4].astype(int), df_custom[3].astype(int)], axis=1)
 num_scheduled.columns = ['classic_num', 'custom_num', 'original_num']
 num_scheduled = num_scheduled.sort_values(by='original_num')
 
-num_scheduled_avg = num_scheduled.groupby(np.arange(len(num_scheduled)) // 5).mean()
+num_scheduled_avg = num_scheduled.groupby(np.arange(len(num_scheduled)) // 25).mean()
 print(num_scheduled_avg)
 
 import plotly.express as px
 
-fig = px.bar(num_scheduled_avg.iloc[:, 0:2],  labels=num_scheduled_avg['original_num'], barmode='group', height=400, width=800)
+fig = px.bar(num_scheduled_avg, x='original_num', y=['classic_num', 'custom_num'], barmode='group', height=400,
+             width=600)
+fig.update_layout(
+    xaxis=dict(
+        tickmode='array',
+        tickvals=num_scheduled_avg.original_num
+    )
+)
 fig.update_xaxes(title_text='Number of Tasks', showgrid=True, dtick=1)
 fig.update_yaxes(title_text='Number Scheduled', showgrid=True)
+fig.update_layout(title='Number of Tasks Scheduled')
 fig.show()
 
 import pandas as pd
@@ -89,14 +100,62 @@ with open('./data/stats_custom.txt', 'r') as file:
         custom_stats = custom_stats.append(new_row, ignore_index=True)
     custom_stats = custom_stats[:-1]
 
+custom_stats.time = custom_stats.time.astype(float)
+classic_stats.time = classic_stats.time.astype(float)
+
 time = pd.DataFrame(data={
     'num_tasks': classic_stats.num_tasks,
-    'classic_time': classic_stats.time,
-    'custom_time': custom_stats.time
+    'classic_time': classic_stats.time * PROCESSOR_FREQ,
+    'custom_time': custom_stats.time * PROCESSOR_FREQ
 })
 time = time.astype(float)
 time.num_tasks = time.num_tasks.astype(int)
 time = time.sort_values(by=['num_tasks'], ignore_index=True, ascending=True)
+
+fig_time_both = px.line(time, x='num_tasks', y=['classic_time', 'custom_time'], log_x=False, log_y=False)
+fig_time_both.update_yaxes(title='Time Taken')
+fig_time_both.update_xaxes(title='Number of Tasks')
+fig_time_both.update_layout(title='Time taken to Number of Tasks')
+fig_time_both.show()
+
+classic_time_max_num = 1
+classic_time_max_num_y = 1
+for i in range(len(time)):
+    if math.isclose(time['classic_time'][i], SCHEDULE_WINDOW, rel_tol=0.1):
+        classic_time_max_num_y = time.iloc[i]['classic_time']
+        classic_time_max_num = time.iloc[i]['num_tasks']
+
+fig_time_classic = px.line(time, x='num_tasks', y=['classic_time'], log_x=False, log_y=True)
+if classic_time_max_num_y != 1:
+    fig_time_classic.add_annotation(x=classic_time_max_num, y=math.log10(classic_time_max_num_y),
+                                    text="Maximum Number of Tasks: " + str(classic_time_max_num),
+                                    showarrow=True,
+                                    arrowhead=1)
+
+fig_time_classic.update_yaxes(title='Time Taken')
+fig_time_classic.update_xaxes(title='Number of Tasks')
+fig_time_classic.update_layout(title='Time taken to Number of Tasks')
+fig_time_classic.show()
+
+fig_time_custom = px.line(time, x='num_tasks', y=['custom_time'], log_x=False, log_y=True)
+fig_time_custom.update_yaxes(title='Time Taken')
+fig_time_custom.update_xaxes(title='Number of Tasks')
+fig_time_custom.update_layout(title='Time taken to Number of Tasks')
+
+
+custom_time_max_num = -1
+custom_time_max_num_y = -1
+for i in range(len(time)):
+    if math.isclose(time['custom_time'][i], SCHEDULE_WINDOW, rel_tol=0.1):
+        custom_time_max_num_y = time.iloc[i]['custom_time']
+        custom_time_max_num = time.iloc[i]['num_tasks']
+
+fig_time_custom.add_annotation(x=custom_time_max_num, y=math.log10(custom_time_max_num_y),
+                               text="Maximum Number of Tasks: " + str(custom_time_max_num),
+                               showarrow=True,
+                               arrowhead=1)
+
+fig_time_custom.show()
 
 fn_calls = pd.DataFrame(data={
     'num_tasks': classic_stats.num_tasks,
@@ -107,11 +166,10 @@ fn_calls = fn_calls.astype(float)
 fn_calls.num_tasks = fn_calls.num_tasks.astype(int)
 fn_calls = fn_calls.sort_values(by=['num_tasks'], ignore_index=True, ascending=True)
 
-
 ratio = pd.DataFrame(data={
     'num_tasks': classic_stats.num_tasks.astype(float),
-    'classic_ratio': classic_stats.fn_calls.astype(float)/classic_stats.num_tasks.astype(float),
-    'custom_ratio': custom_stats.fn_calls.astype(float)/classic_stats.num_tasks.astype(float)
+    'classic_ratio': classic_stats.fn_calls.astype(float) / classic_stats.num_tasks.astype(float),
+    'custom_ratio': custom_stats.fn_calls.astype(float) / classic_stats.num_tasks.astype(float)
 })
 
 ratio = ratio.sort_values(by=['num_tasks'], ignore_index=True, ascending=True)
@@ -122,11 +180,10 @@ fig_ratio.update_xaxes(title='Number of Tasks')
 fig_ratio.update_layout(title='Ratio of Function Calls to Number of Tasks')
 fig_ratio.show()
 
-
 time_ratio = pd.DataFrame(data={
     'num_tasks': classic_stats.num_tasks.astype(float),
-    'classic_ratio': classic_stats.time.astype(float)/classic_stats.num_tasks.astype(float),
-    'custom_ratio': custom_stats.time.astype(float)/classic_stats.num_tasks.astype(float)
+    'classic_ratio': (classic_stats.time.astype(float) * PROCESSOR_FREQ) / classic_stats.num_tasks.astype(float),
+    'custom_ratio': (custom_stats.time.astype(float) * PROCESSOR_FREQ) / classic_stats.num_tasks.astype(float)
 })
 
 time_ratio = time_ratio.sort_values(by=['num_tasks'], ignore_index=True, ascending=True)
@@ -141,8 +198,22 @@ print(time[:25])
 
 print(fn_calls[:25])
 
-fig = px.line(fn_calls, x='num_tasks', y='custom_fn_calls', log_x=False, log_y=False)
-fig.update_yaxes(title='Time')
-fig.update_xaxes(title='Number of Tasks')
-fig.update_layout(title='Custom Function Calls')
-fig.show()
+fig_custom_fn = px.line(fn_calls, x='num_tasks', y='custom_fn_calls', log_x=False, log_y=False)
+fig_custom_fn.update_yaxes(title='Function Calls')
+fig_custom_fn.update_xaxes(title='Number of Tasks')
+fig_custom_fn.update_layout(title='Custom Function Calls')
+fig_custom_fn.show()
+
+fig_classic_fn = px.line(fn_calls, x='num_tasks', y='classic_fn_calls', log_x=False, log_y=False)
+fig_classic_fn.update_yaxes(title='Function Calls')
+fig_classic_fn.update_xaxes(title='Number of Tasks')
+fig_classic_fn.update_layout(title='Classic Function Calls')
+fig_classic_fn.show()
+
+fn_calls['ratio'] = (fn_calls.classic_fn_calls / fn_calls.custom_fn_calls).astype(float)
+
+fig_fn_ratio_compared = px.line(fn_calls, x='num_tasks', y='ratio', log_x=True, log_y=False)
+fig_fn_ratio_compared.update_yaxes(title='Function Calls Ratio')
+fig_fn_ratio_compared.update_xaxes(title='Number of Tasks')
+fig_fn_ratio_compared.update_layout(title='Ratio of Number of Function Calls')
+fig_fn_ratio_compared.show()
