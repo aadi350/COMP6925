@@ -98,7 +98,7 @@ def main():
     tasks_list = load_tasks()
     import cProfile
 
-    with open('custom_stats.csv', 'w', newline='\n') as file:
+    with open('data/custom_stats.csv', 'w', newline='\n') as file:
         file_writer = csv.writer(file, delimiter=',')
         for task_list in tasks_list:
             pr.enable()
@@ -113,7 +113,7 @@ def main():
             #
             file_writer.writerow(temp)
     print('Classic')
-    with open('classic_stats.csv', 'w', newline='\n') as file:
+    with open('data/classic_stats.csv', 'w', newline='\n') as file:
         file_writer = csv.writer(file, delimiter=',')
         for task_list in tasks_list:
             pr.enable()

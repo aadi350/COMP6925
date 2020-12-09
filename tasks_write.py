@@ -11,7 +11,7 @@ for i in range(len(task_num)):
         tasks_list.append(get_tasks(task_num[i]))
 
 
-with open('tasks.csv', 'w', newline='\n') as file:
+with open('data/tasks.csv', 'w', newline='\n') as file:
     file_writer = csv.writer(file, delimiter=',')
     for task_list in tasks_list:
         file_writer.writerow(task_list)
