@@ -1,11 +1,11 @@
 import csv
 from tasks_gen import get_tasks
 
-"""
-    File is responsible for randomly generating set of normally-distributed tasks
-    with means as defined in task_num for NUM_ITERATIONS
-    Output is written to tasks.csv
-"""
+
+# File is responsible for randomly generating set of normally-distributed tasks
+# with means as defined in task_num for NUM_ITERATIONS
+# Output is written to tasks.csv
+
 
 NUM_ITERATIONS = 25
 
