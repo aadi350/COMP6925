@@ -3,9 +3,11 @@ from Task import Task
 from numpy.random import normal
 from numpy.random import poisson
 
+# generates normally-distributed task sets for task_writer
+
+# processing frequencies
 HIGH = 100
 LOW = 70
-WINDOW = 90
 
 
 def get_tasks(mean=100, limit_upper=200):
