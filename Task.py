@@ -1,3 +1,5 @@
+# Custom class for defining a 'Task'
+
 class Task:
     def __init__(self, id, priority, clk_cycles):
         self.id = id
