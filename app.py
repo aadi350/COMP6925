@@ -3,6 +3,7 @@ import logging
 
 from Task import Task
 from classic import optimize_single_classic
+import cProfile, pstats, sys
 
 HIGH = 100
 PRINT_LOGS = False
@@ -10,6 +11,7 @@ LOW = 70
 WINDOW = 180
 
 
+# reads tasks from file as generated from task_writer
 def load_tasks(file_path='tasks.csv'):
     task_list = []
     with open(file_path, 'r') as file:
@@ -58,7 +60,7 @@ def optimize_single_set(task_list):
         for task in task_list:
             task_list_i += 1
             if task not in s:
-                new_time = sum(s[i].cycles/s[i].freq for i in range(1, len(s))) + task.cycles/task.freq
+                new_time = sum(s[i].cycles / s[i].freq for i in range(1, len(s))) + task.cycles / task.freq
                 if new_time < WINDOW:
                     s_new = s
                     s_new.append(task)
@@ -83,20 +85,16 @@ def optimize_single_set(task_list):
                 else:
                     status = False
 
-    if True:
-        best_time = sum(best_schedule[i].time for i in range(len(best_schedule)))
-        best_power = sum(best_schedule[i].freq*best_schedule[i].cycles for i in range(len(best_schedule)))
-        return status, best_time, best_power, initial_list_size, len(best_schedule)
-    return None
+    best_time = sum(best_schedule[i].time for i in range(len(best_schedule)))
+    best_power = sum(best_schedule[i].freq * best_schedule[i].cycles for i in range(len(best_schedule)))
+    return status, best_time, best_power, initial_list_size, len(best_schedule)
 
 
-import cProfile, pstats, sys
 pr = cProfile.Profile()
 
 
 def main():
     tasks_list = load_tasks()
-    import cProfile
 
     with open('data/custom_stats.csv', 'w', newline='\n') as file:
         file_writer = csv.writer(file, delimiter=',')
@@ -105,13 +103,10 @@ def main():
             temp = optimize_single_set(task_list=task_list)
             pr.disable()
             ps = pstats.Stats(pr, stream=sys.stdout)
-            ps.sort_stats('time','cumtime').print_stats(0, 'init|get')
+            ps.sort_stats('time', 'cumtime').print_stats(0, 'init|get')
             ps.get_top_level_stats()
-            # cProfile.runctx(
-            #     'optimize_single_set(task_list=task_list)',
-            #     {'task_list': task_list, 'optimize_single_set': optimize_single_set}, {})
-            #
             file_writer.writerow(temp)
+
     print('Classic')
     with open('data/classic_stats.csv', 'w', newline='\n') as file:
         file_writer = csv.writer(file, delimiter=',')
@@ -122,10 +117,6 @@ def main():
             ps = pstats.Stats(pr, stream=sys.stdout)
             ps.sort_stats('time', 'cumtime').print_stats(0, 'init|get')
             ps.get_top_level_stats()
-            # cProfile.runctx(
-            #     'optimize_single_classic(task_list=task_list)',
-            #     {'task_list': task_list, 'optimize_single_classic': optimize_single_classic}, {})
-            # temp = optimize_single_classic(task_list=task_list)
             file_writer.writerow(temp)
 
 
