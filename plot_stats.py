@@ -3,6 +3,9 @@ import math
 import pandas as pd
 import numpy as np
 
+# file responsible for generating statistical plots using plotly
+# requires task_writed to be run in order to provide files for reading in values
+
 tasks = []
 PROCESSOR_FREQ = 30
 SCHEDULE_WINDOW = 900
